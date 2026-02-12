@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  gateway:
+    build: .
+    container_name: parentcontrol-gateway
+    network_mode: host
+    restart: unless-stopped
+
+    # Required for network manipulation
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - NET_BIND_SERVICE
+
+    # Alternative to full privileged mode
+    # privileged: true
+
+    volumes:
+      # Persist database and logs
+      - ./data:/app/data
+      # Configuration files
+      - ./config:/app/config
+      # Logs
+      - ./logs:/app/logs
+
+    environment:
+      # Application settings
+      - APP_ENV=production
+      - LOG_LEVEL=info
+      - DB_PATH=/app/data/traffic.db
+
+      # Network settings
+      - PROXY_PORT=8080
+      - API_PORT=8000
+      - DNS_PORT=53
+
+      # DNS upstream
+      - DNS_UPSTREAM=8.8.8.8
+
+      # Web interface
+      - WEB_ENABLED=true
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
